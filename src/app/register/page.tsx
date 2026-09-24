@@ -1,13 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '../supabase';
 
 export default function RegisterDaee() {
-  const router = useRouter();
-
   const [formData, setFormData] = useState({
     name: '',
     mobile: '',
@@ -28,7 +25,6 @@ export default function RegisterDaee() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // পিন কোড যাচাই
     if (formData.pin.length < 4) {
       alert('পিন কোড কমপক্ষে ৪ ডিজিটের হতে হবে!');
       return;
@@ -37,12 +33,11 @@ export default function RegisterDaee() {
     setLoading(true);
 
     try {
-      // নতুন দাঈর কোড হবে সরাসরি 'Pending'
       const { error: insertError } = await supabase
         .from('profiles')
         .insert([
           {
-            user_id: 'Pending', // এডমিন পরবর্তীতে নির্ধারণ করবেন
+            user_id: 'Pending',
             name: formData.name.trim(),
             role: 'daee',
             parent_daee_id: null,
@@ -110,6 +105,7 @@ export default function RegisterDaee() {
             <input name="mobile" value={formData.mobile} onChange={handleChange} type="tel" className="w-full border p-2.5 rounded focus:outline-none focus:border-green-600" placeholder="01XXXXXXXXX" required />
           </div>
 
+          {/* পিন কোড ফিল্ড */}
           <div className="bg-green-50 p-4 rounded-lg border border-green-200">
             <label className="block text-green-900 mb-1 font-bold">লগইন পিন কোড (৪ ডিজিট) *</label>
             <input name="pin" value={formData.pin} onChange={handleChange} type="password" maxLength={6} className="w-full border p-2.5 rounded focus:outline-none focus:border-green-600 bg-white tracking-widest text-lg font-bold" placeholder="****" required />

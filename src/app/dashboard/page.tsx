@@ -180,7 +180,7 @@ function DashboardContent() {
                         <td className="p-3 font-medium text-gray-800">{madu.name}</td>
                         <td className="p-3 text-gray-600">{madu.mobile}</td>
                         <td className="p-3 text-xs text-gray-500 font-medium">
-                          {formatDateTime(m.created_at)}
+                          {formatDateTime(madu.created_at)}
                         </td>
                         <td className="p-3 text-center">
                           <span className="bg-green-100 text-green-700 text-xs px-3 py-1 rounded-full font-medium">
