@@ -7,7 +7,7 @@ import { supabase } from '../supabase';
 export default function RegisterDaee() {
   const [formData, setFormData] = useState({
     name: '',
-    gender: 'পুরুষ', // ডিফল্ট পুরুষ
+    gender: 'পুরুষ',
     mobile: '',
     pin: '',
     email: '',
@@ -19,7 +19,7 @@ export default function RegisterDaee() {
   const [loading, setLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
@@ -40,7 +40,7 @@ export default function RegisterDaee() {
           {
             user_id: 'Pending',
             name: formData.name.trim(),
-            gender: formData.gender, // জেন্ডার সেভ হচ্ছে
+            gender: formData.gender,
             role: 'daee',
             parent_daee_id: null,
             mobile: formData.mobile.trim(),
@@ -53,7 +53,6 @@ export default function RegisterDaee() {
         ]);
 
       if (insertError) throw insertError;
-
       setIsSuccess(true);
 
     } catch (error: any) {
@@ -65,25 +64,15 @@ export default function RegisterDaee() {
 
   if (isSuccess) {
     return (
-      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4">
-        <div className="bg-white p-8 rounded-3xl shadow-xl border-t-8 border-amber-500 text-center max-w-md w-full">
-          <div className="w-20 h-20 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto mb-5 text-4xl shadow-inner">
-            ⏳
-          </div>
-          <h2 className="text-2xl font-extrabold text-gray-900 mb-2">আবেদন জমা হয়েছে!</h2>
-          <p className="text-gray-600 text-sm mb-6 leading-relaxed">
-            আলহামদুলিল্লাহ, আপনার দাঈ নিবন্ধন তথ্য সফলভাবে জমা হয়েছে। আপনার কোড বর্তমানে 
-            <span className="font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded ml-1">পর্যালোচনায় (Pending)</span> রয়েছে।
+      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
+        <div className="bg-white p-6 rounded-2xl shadow-md border-t-4 border-amber-500 text-center max-w-sm w-full">
+          <div className="text-3xl mb-2">⏳</div>
+          <h2 className="text-xl font-bold text-gray-800 mb-1">আবেদন জমা হয়েছে!</h2>
+          <p className="text-gray-600 text-xs mb-4">
+            আপনার দাঈ কোড বর্তমানে <span className="font-bold text-amber-600">Pending</span> রয়েছে। সুপার এডমিন যাচাই করে কোড অনুমোদন করবেন।
           </p>
-          
-          <div className="bg-amber-50/60 border border-amber-200 p-4 rounded-2xl mb-6 text-xs text-amber-900 text-left space-y-1.5">
-            <p className="font-bold flex items-center gap-1.5">📌 করণীয়:</p>
-            <p>১. কেন্দ্রীয় সুপার এডমিন আপনার আবেদন যাচাই করে দাঈ কোড অনুমোদন করবেন।</p>
-            <p>২. আপনার মোবাইল ও পিন কোড দিয়ে লগইন করে স্ট্যাটাস দেখতে পারবেন।</p>
-          </div>
-
           <Link href="/login">
-            <button className="w-full bg-[#00a651] hover:bg-[#008f45] text-white py-3.5 rounded-xl font-bold transition shadow-lg shadow-green-600/20">
+            <button className="w-full bg-[#00a651] text-white py-2.5 rounded-lg text-sm font-semibold hover:bg-green-700 transition">
               লগইন পেজে যান
             </button>
           </Link>
@@ -93,98 +82,81 @@ export default function RegisterDaee() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-green-50/50 to-slate-100 py-12 px-4 flex justify-center items-center">
-      <div className="bg-white rounded-3xl shadow-xl border border-gray-100 w-full max-w-xl overflow-hidden">
+    <div className="min-h-screen bg-gray-100 py-6 px-3 flex justify-center items-center">
+      <div className="bg-white rounded-2xl shadow-md border border-gray-200 w-full max-w-lg overflow-hidden">
         
-        <div className="bg-gradient-to-r from-[#008f45] to-[#00a651] text-white p-8 text-center relative">
-          <span className="bg-white/20 backdrop-blur-md text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider inline-block mb-2">
-            দাঈ রেজিস্ট্রেশন
-          </span>
-          <h1 className="text-2xl md:text-3xl font-extrabold">দাওয়াতুস সুন্নাহ</h1>
-          <p className="text-green-100 text-xs md:text-sm mt-1">আসসুন্নাহ ফাউন্ডেশনের একটি দাওয়াতি উদ্যোগ</p>
+        {/* কমপ্যাক্ট হেডার: দাওয়াতুস সুন্নাহ -> দাঈ রেজিস্ট্রেশন -> আসসুন্নাহ ফাউন্ডেশন */}
+        <div className="bg-[#008f45] text-white py-4 px-5 text-center">
+          <h1 className="text-xl font-bold tracking-wide">দাওয়াতুস সুন্নাহ</h1>
+          <p className="text-sm font-semibold text-green-100 mt-0.5">দাঈ রেজিস্ট্রেশন</p>
+          <p className="text-[11px] text-green-200 mt-0.5">আসসুন্নাহ ফাউন্ডেশনের একটি দাওয়াতি উদ্যোগ</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 md:p-8 space-y-6">
+        {/* কমপ্যাক্ট ও সংক্ষেপ ফর্ম */}
+        <form onSubmit={handleSubmit} className="p-5 space-y-3.5">
           
-          <div className="space-y-4">
-            <h3 className="text-sm font-bold text-gray-800 uppercase tracking-wider flex items-center gap-2 border-b pb-2">
-              <span>👤</span> ব্যক্তিগত ও যোগাযোগের তথ্য
-            </h3>
-
-            <div>
-              <label className="block text-gray-700 text-xs font-bold uppercase mb-1.5">পুরো নাম *</label>
-              <input 
-                name="name" 
-                value={formData.name} 
-                onChange={handleChange} 
-                type="text" 
-                className="w-full border border-gray-200 bg-gray-50/50 p-3 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#00a651] text-sm" 
-                placeholder="আপনার পুরো নাম লিখুন" 
-                required 
-              />
-            </div>
-
-            {/* জেন্ডার নির্বাচন */}
-            <div>
-              <label className="block text-gray-700 text-xs font-bold uppercase mb-1.5">লিঙ্গ (Gender) *</label>
-              <div className="grid grid-cols-2 gap-3">
-                <label className={`flex items-center justify-center p-3 rounded-xl border cursor-pointer font-medium text-sm transition ${formData.gender === 'পুরুষ' ? 'border-[#00a651] bg-green-50 text-[#00a651] font-bold' : 'border-gray-200 bg-gray-50 text-gray-600'}`}>
-                  <input 
-                    type="radio" 
-                    name="gender" 
-                    value="পুরুষ" 
-                    checked={formData.gender === 'পুরুষ'} 
-                    onChange={handleChange} 
-                    className="mr-2 accent-[#00a651]" 
-                  />
-                  👨 পুরুষ
-                </label>
-                <label className={`flex items-center justify-center p-3 rounded-xl border cursor-pointer font-medium text-sm transition ${formData.gender === 'মহিলা' ? 'border-pink-600 bg-pink-50 text-pink-700 font-bold' : 'border-gray-200 bg-gray-50 text-gray-600'}`}>
-                  <input 
-                    type="radio" 
-                    name="gender" 
-                    value="মহিলা" 
-                    checked={formData.gender === 'মহিলা'} 
-                    onChange={handleChange} 
-                    className="mr-2 accent-pink-600" 
-                  />
-                  🧕 মহিলা
-                </label>
-              </div>
-            </div>
-            
-            <div>
-              <label className="block text-gray-700 text-xs font-bold uppercase mb-1.5">মোবাইল নাম্বার (WhatsApp) *</label>
-              <input 
-                name="mobile" 
-                value={formData.mobile} 
-                onChange={handleChange} 
-                type="tel" 
-                className="w-full border border-gray-200 bg-gray-50/50 p-3 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#00a651] text-sm font-medium" 
-                placeholder="01XXXXXXXXX" 
-                required 
-              />
-            </div>
-
-            <div>
-              <label className="block text-gray-700 text-xs font-bold uppercase mb-1.5">ইমেইল ঠিকানা (ঐচ্ছিক)</label>
-              <input 
-                name="email" 
-                value={formData.email} 
-                onChange={handleChange} 
-                type="email" 
-                className="w-full border border-gray-200 bg-gray-50/50 p-3 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#00a651] text-sm" 
-                placeholder="example@gmail.com" 
-              />
-            </div>
+          {/* নাম */}
+          <div>
+            <label className="block text-gray-700 text-xs font-bold mb-1">পুরো নাম *</label>
+            <input 
+              name="name" 
+              value={formData.name} 
+              onChange={handleChange} 
+              type="text" 
+              className="w-full border border-gray-300 p-2 rounded-lg text-sm focus:outline-none focus:border-[#00a651]" 
+              placeholder="আপনার পুরো নাম লিখুন" 
+              required 
+            />
           </div>
 
-          <div className="bg-green-50/60 p-5 rounded-2xl border border-green-200 space-y-2">
-            <div className="flex justify-between items-center">
-              <label className="text-green-950 text-xs font-bold uppercase flex items-center gap-1.5">
-                <span>🔒</span> লগইন পিন কোড (৪-৬ ডিজিট) *
+          {/* জেন্ডার নির্বাচন */}
+          <div>
+            <label className="block text-gray-700 text-xs font-bold mb-1">লিঙ্গ (Gender) *</label>
+            <div className="grid grid-cols-2 gap-2">
+              <label className={`flex items-center justify-center py-2 px-3 rounded-lg border cursor-pointer text-xs font-medium transition ${formData.gender === 'পুরুষ' ? 'border-[#00a651] bg-green-50 text-[#00a651] font-bold' : 'border-gray-200 text-gray-600'}`}>
+                <input 
+                  type="radio" 
+                  name="gender" 
+                  value="পুরুষ" 
+                  checked={formData.gender === 'পুরুষ'} 
+                  onChange={handleChange} 
+                  className="mr-1.5 accent-[#00a651]" 
+                />
+                👨 পুরুষ
               </label>
-              <span className="text-[10px] bg-green-200/60 text-green-900 font-bold px-2 py-0.5 rounded">গোপন রাখুন</span>
+              <label className={`flex items-center justify-center py-2 px-3 rounded-lg border cursor-pointer text-xs font-medium transition ${formData.gender === 'মহিলা' ? 'border-pink-500 bg-pink-50 text-pink-700 font-bold' : 'border-gray-200 text-gray-600'}`}>
+                <input 
+                  type="radio" 
+                  name="gender" 
+                  value="মহিলা" 
+                  checked={formData.gender === 'মহিলা'} 
+                  onChange={handleChange} 
+                  className="mr-1.5 accent-pink-600" 
+                />
+                🧕 মহিলা
+              </label>
+            </div>
+          </div>
+          
+          {/* মোবাইল */}
+          <div>
+            <label className="block text-gray-700 text-xs font-bold mb-1">মোবাইল নাম্বার (WhatsApp) *</label>
+            <input 
+              name="mobile" 
+              value={formData.mobile} 
+              onChange={handleChange} 
+              type="tel" 
+              className="w-full border border-gray-300 p-2 rounded-lg text-sm focus:outline-none focus:border-[#00a651]" 
+              placeholder="01XXXXXXXXX" 
+              required 
+            />
+          </div>
+
+          {/* পিন কোড (কমপ্যাক্ট ডিজাইন) */}
+          <div className="bg-green-50/70 p-3 rounded-xl border border-green-200">
+            <div className="flex justify-between items-center mb-1">
+              <label className="text-green-950 text-xs font-bold">লগইন পিন কোড (৪-৬ ডিজিট) *</label>
+              <span className="text-[10px] text-green-700 font-medium">(লগইনে লাগবে)</span>
             </div>
             <input 
               name="pin" 
@@ -192,72 +164,81 @@ export default function RegisterDaee() {
               onChange={handleChange} 
               type="password" 
               maxLength={6} 
-              className="w-full border border-green-300 bg-white p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00a651] tracking-widest text-center text-xl font-extrabold" 
+              className="w-full border border-green-300 bg-white p-2 rounded-lg text-center font-bold tracking-widest text-base focus:outline-none focus:ring-1 focus:ring-[#00a651]" 
               placeholder="••••" 
               required 
             />
-            <p className="text-[11px] text-green-800">পরবর্তীতে এই মোবাইল নম্বর ও পিন দিয়েই সিস্টেমে লগইন করতে হবে।</p>
           </div>
 
-          <div className="space-y-4">
-            <h3 className="text-sm font-bold text-gray-800 uppercase tracking-wider flex items-center gap-2 border-b pb-2 pt-2">
-              <span>📍</span> ঠিকানা ও শিক্ষাগত বিবরণ
-            </h3>
-
-            <div>
-              <label className="block text-gray-700 text-xs font-bold uppercase mb-1.5">বর্তমান ঠিকানা *</label>
-              <textarea 
-                name="presentAddress" 
-                value={formData.presentAddress} 
-                onChange={handleChange} 
-                className="w-full border border-gray-200 bg-gray-50/50 p-3 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#00a651] text-sm" 
-                placeholder="থানা, জেলা ও বর্তমান বসবাসের ঠিকানা" 
-                rows={2} 
-                required
-              ></textarea>
-            </div>
-
-            <div>
-              <label className="block text-gray-700 text-xs font-bold uppercase mb-1.5">স্থায়ী ঠিকানা *</label>
-              <textarea 
-                name="permanentAddress" 
-                value={formData.permanentAddress} 
-                onChange={handleChange} 
-                className="w-full border border-gray-200 bg-gray-50/50 p-3 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#00a651] text-sm" 
-                placeholder="গ্রাম/মহল্লা, থানা ও স্থায়ী জেলা" 
-                rows={2} 
-                required
-              ></textarea>
-            </div>
-
-            <div>
-              <label className="block text-gray-700 text-xs font-bold uppercase mb-1.5">শিক্ষাগত যোগ্যতা *</label>
-              <input 
-                name="education" 
-                value={formData.education} 
-                onChange={handleChange} 
-                type="text" 
-                className="w-full border border-gray-200 bg-gray-50/50 p-3 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#00a651] text-sm" 
-                placeholder="যেমন: দাওরায়ে হাদিস / অনার্স / কামিল" 
-                required 
-              />
-            </div>
+          {/* বর্তমান ঠিকানা */}
+          <div>
+            <label className="block text-gray-700 text-xs font-bold mb-1">বর্তমান ঠিকানা *</label>
+            <textarea 
+              name="presentAddress" 
+              value={formData.presentAddress} 
+              onChange={handleChange} 
+              className="w-full border border-gray-300 p-2 rounded-lg text-sm focus:outline-none focus:border-[#00a651]" 
+              placeholder="বর্তমান ঠিকানা" 
+              rows={1} 
+              required
+            ></textarea>
           </div>
 
+          {/* স্থায়ী ঠিকানা */}
+          <div>
+            <label className="block text-gray-700 text-xs font-bold mb-1">স্থায়ী ঠিকানা *</label>
+            <textarea 
+              name="permanentAddress" 
+              value={formData.permanentAddress} 
+              onChange={handleChange} 
+              className="w-full border border-gray-300 p-2 rounded-lg text-sm focus:outline-none focus:border-[#00a651]" 
+              placeholder="স্থায়ী ঠিকানা" 
+              rows={1} 
+              required
+            ></textarea>
+          </div>
+
+          {/* শিক্ষাগত যোগ্যতা */}
+          <div>
+            <label className="block text-gray-700 text-xs font-bold mb-1">শিক্ষাগত যোগ্যতা *</label>
+            <input 
+              name="education" 
+              value={formData.education} 
+              onChange={handleChange} 
+              type="text" 
+              className="w-full border border-gray-300 p-2 rounded-lg text-sm focus:outline-none focus:border-[#00a651]" 
+              placeholder="যেমন: দাওরায়ে হাদিস / অনার্স" 
+              required 
+            />
+          </div>
+
+          {/* ইমেইল (ঐচ্ছিক) */}
+          <div>
+            <label className="block text-gray-500 text-xs font-medium mb-1">ইমেইল ঠিকানা (ঐচ্ছিক)</label>
+            <input 
+              name="email" 
+              value={formData.email} 
+              onChange={handleChange} 
+              type="email" 
+              className="w-full border border-gray-300 p-2 rounded-lg text-sm focus:outline-none focus:border-[#00a651]" 
+              placeholder="example@gmail.com" 
+            />
+          </div>
+
+          {/* সাবমিট বাটন */}
           <button 
             type="submit" 
             disabled={loading} 
-            className={`w-full py-4 rounded-xl font-extrabold text-sm uppercase tracking-wider text-white transition duration-200 shadow-xl ${
-              loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#00a651] hover:bg-[#008f45] shadow-green-600/25 active:scale-[0.99]'
+            className={`w-full py-2.5 rounded-lg font-bold text-sm text-white transition ${
+              loading ? 'bg-gray-400' : 'bg-[#00a651] hover:bg-green-700 shadow'
             }`}
           >
-            {loading ? 'তথ্য যাচাই ও সংরক্ষণ হচ্ছে...' : 'দাঈ হিসেবে আবেদন জমা দিন'}
+            {loading ? 'জমা হচ্ছে...' : 'নিবন্ধন সম্পন্ন করুন'}
           </button>
 
-          <div className="text-center pt-2">
-            <span className="text-xs text-gray-500">ইতিমধ্যে নিবন্ধিত দাঈ? </span>
-            <Link href="/login" className="text-xs font-bold text-[#00a651] hover:underline">
-              এখানে লগইন করুন
+          <div className="text-center pt-1">
+            <Link href="/login" className="text-xs text-gray-500 hover:text-green-700">
+              ইতিমধ্যে নিবন্ধিত? <span className="font-bold text-[#00a651]">লগইন করুন</span>
             </Link>
           </div>
 
