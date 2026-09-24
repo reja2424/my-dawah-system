@@ -89,27 +89,29 @@ export default function AdminDashboard() {
     }
   };
 
-  // দাঈর তথ্য মুছে ফেলার ফাংশন
-  const handleDeleteDaee = async (daeeId: string, daeeName: string, userId: string) => {
-    const isConfirm = window.confirm(`আপনি কি নিশ্চিতভাবে দাঈ "${daeeName}"-এর সমস্ত তথ্য মুছে ফেলতে চান?`);
+  // স্থায়ীভাবে তালিকা ও ডাটাবেস থেকে ডিলিট করার ফাংশন
+  const handleDeleteDaee = async (daeeRecordId: any, daeeName: string, userId: string) => {
+    const isConfirm = window.confirm(`আপনি কি নিশ্চিতভাবে "${daeeName}"-এর পুরো একাউন্টটি তালিকা থেকে স্থায়ীভাবে ডিলিট করতে চান?`);
     if (!isConfirm) return;
 
     try {
-      // দাঈ মুছে ফেলা
+      // ১. ডাটাবেস থেকে দাঈর পুরো রো মুছে ফেলা
       const { error } = await supabase
         .from('profiles')
         .delete()
-        .eq('id', daeeId);
+        .eq('id', daeeRecordId);
 
       if (error) throw error;
 
-      // যদি তার অধীনে কোনো মাদউ থাকে তবে তাদেরও মুছে দেওয়া
+      // ২. যদি ঐ দাঈর অধীনে কোনো মাদউ থাকে, তাদেরও ডিলিট করা
       if (userId && userId !== 'Pending') {
         await supabase.from('profiles').delete().eq('parent_daee_id', userId);
       }
 
-      alert('দাঈর তথ্য সফলভাবে মুছে ফেলা হয়েছে!');
-      fetchAdminData(); // ডাটা রিফ্রেশ
+      // ৩. স্ক্রিন থেকে সাথে সাথে সরিয়ে দেওয়া (Instant Live Update)
+      setDaeeList((prevList) => prevList.filter((daee) => daee.id !== daeeRecordId));
+      alert(`"${daeeName}"-কে তালিকা থেকে সফলভাবে সম্পূর্ণ ডিলিট করা হয়েছে!`);
+
     } catch (err: any) {
       alert('মুছে ফেলতে সমস্যা হয়েছে: ' + err.message);
     }
@@ -145,7 +147,7 @@ export default function AdminDashboard() {
           <div>
             <span className="bg-red-600 text-xs px-2.5 py-1 rounded font-bold uppercase tracking-wider">Super Admin Panel</span>
             <h1 className="text-2xl font-bold mt-2">দাওয়াতুস সুন্নাহ - কেন্দ্রীয় মনিটরিং</h1>
-            <p className="text-gray-400 text-sm mt-1">দাঈ কোড অনুমোদন, মুছে ফেলা ও পরিসংখ্যান</p>
+            <p className="text-gray-400 text-sm mt-1">দাঈ কোড অনুমোদন, একাউন্ট ডিলিট ও পরিসংখ্যান</p>
           </div>
           <Link href="/">
             <button onClick={handleLogout} className="bg-gray-800 hover:bg-gray-700 text-sm border border-gray-700 px-4 py-2.5 rounded-lg transition font-medium">
@@ -252,7 +254,6 @@ export default function AdminDashboard() {
                       </td>
                       <td className="p-3 text-center">
                         <div className="flex items-center justify-center gap-1.5">
-                          {/* কোড বসানো বাটন */}
                           <button 
                             onClick={() => {
                               setEditingDaee(daee);
@@ -263,11 +264,11 @@ export default function AdminDashboard() {
                             {daee.user_id === 'Pending' ? 'কোড বসান' : 'এডিট'}
                           </button>
 
-                          {/* ডিলিট বাটন */}
+                          {/* স্থায়ীভাবে ডিলিট করার বাটন */}
                           <button 
                             onClick={() => handleDeleteDaee(daee.id, daee.name, daee.user_id)}
                             className="bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 text-xs px-2.5 py-1.5 rounded-md font-medium transition"
-                            title="মুছে ফেলুন"
+                            title="তালিকা ও ডাটাবেস থেকে স্থায়ীভাবে মুছে ফেলুন"
                           >
                             মুছুন
                           </button>
@@ -316,7 +317,6 @@ export default function AdminDashboard() {
         {selectedDaeeMadus && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
             <div className="bg-white p-6 rounded-2xl max-w-3xl w-full max-h-[85vh] overflow-y-auto shadow-2xl">
-              
               <div className="flex justify-between items-center mb-4 border-b pb-3">
                 <div>
                   <h3 className="text-lg font-bold text-gray-800">
