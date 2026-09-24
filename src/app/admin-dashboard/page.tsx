@@ -11,11 +11,9 @@ export default function AdminDashboard() {
   const [selectedDaeeName, setSelectedDaeeName] = useState('');
   const [loading, setLoading] = useState(true);
 
-  // ফিল্টার স্টেট
-  const [daeeGenderFilter, setDaeeGenderFilter] = useState('all'); // all | পুরুষ | মহিলা
+  const [daeeGenderFilter, setDaeeGenderFilter] = useState('all');
   const [maduGenderFilter, setMaduGenderFilter] = useState('all');
 
-  // কোড এডিট করার স্টেট
   const [editingDaee, setEditingDaee] = useState<any | null>(null);
   const [newCodeInput, setNewCodeInput] = useState('');
   const [updating, setUpdating] = useState(false);
@@ -91,24 +89,48 @@ export default function AdminDashboard() {
     }
   };
 
+  // দাঈর তথ্য মুছে ফেলার ফাংশন
+  const handleDeleteDaee = async (daeeId: string, daeeName: string, userId: string) => {
+    const isConfirm = window.confirm(`আপনি কি নিশ্চিতভাবে দাঈ "${daeeName}"-এর সমস্ত তথ্য মুছে ফেলতে চান?`);
+    if (!isConfirm) return;
+
+    try {
+      // দাঈ মুছে ফেলা
+      const { error } = await supabase
+        .from('profiles')
+        .delete()
+        .eq('id', daeeId);
+
+      if (error) throw error;
+
+      // যদি তার অধীনে কোনো মাদউ থাকে তবে তাদেরও মুছে দেওয়া
+      if (userId && userId !== 'Pending') {
+        await supabase.from('profiles').delete().eq('parent_daee_id', userId);
+      }
+
+      alert('দাঈর তথ্য সফলভাবে মুছে ফেলা হয়েছে!');
+      fetchAdminData(); // ডাটা রিফ্রেশ
+    } catch (err: any) {
+      alert('মুছে ফেলতে সমস্যা হয়েছে: ' + err.message);
+    }
+  };
+
   const viewMadus = (daeeId: string, daeeName: string) => {
     const filtered = allMadus.filter(m => m.parent_daee_id === daeeId);
     setSelectedDaeeMadus(filtered);
     setSelectedDaeeName(daeeName);
-    setMaduGenderFilter('all'); // রিসেট ফিল্টার
+    setMaduGenderFilter('all');
   };
 
   const handleLogout = () => {
     localStorage.removeItem('user_session');
   };
 
-  // ফিল্টার অনুযায়ী দাঈ তালিকা
   const filteredDaees = daeeList.filter((daee) => {
     if (daeeGenderFilter === 'all') return true;
     return (daee.gender || 'পুরুষ') === daeeGenderFilter;
   });
 
-  // ফিল্টার অনুযায়ী মাদউ তালিকা (পপআপের জন্য)
   const filteredMadusInModal = selectedDaeeMadus?.filter((madu) => {
     if (maduGenderFilter === 'all') return true;
     return (madu.gender || 'পুরুষ') === maduGenderFilter;
@@ -123,7 +145,7 @@ export default function AdminDashboard() {
           <div>
             <span className="bg-red-600 text-xs px-2.5 py-1 rounded font-bold uppercase tracking-wider">Super Admin Panel</span>
             <h1 className="text-2xl font-bold mt-2">দাওয়াতুস সুন্নাহ - কেন্দ্রীয় মনিটরিং</h1>
-            <p className="text-gray-400 text-sm mt-1">দাঈ ও মাদউদের পরিসংখ্যান ও জেন্ডার ফিল্টারিং</p>
+            <p className="text-gray-400 text-sm mt-1">দাঈ কোড অনুমোদন, মুছে ফেলা ও পরিসংখ্যান</p>
           </div>
           <Link href="/">
             <button onClick={handleLogout} className="bg-gray-800 hover:bg-gray-700 text-sm border border-gray-700 px-4 py-2.5 rounded-lg transition font-medium">
@@ -156,31 +178,21 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {/* দাঈদের মনিটরিং টেবিল + জেন্ডার ফিল্টার বার */}
+        {/* দাঈদের টেবিল */}
         <div className="bg-white p-6 rounded-xl shadow-sm border">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-5 border-b pb-4">
             <h2 className="text-lg font-bold text-gray-800">
-              দাঈদের তালিকা ({filteredDaees.length} জন প্রদর্শিত)
+              দাঈদের তালিকা ({filteredDaees.length} জন)
             </h2>
 
-            {/* ফিল্টার বাটনসমূহ */}
             <div className="flex items-center gap-2 bg-gray-100 p-1 rounded-xl">
-              <button 
-                onClick={() => setDaeeGenderFilter('all')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition ${daeeGenderFilter === 'all' ? 'bg-white text-gray-800 shadow-sm' : 'text-gray-500 hover:text-gray-800'}`}
-              >
+              <button onClick={() => setDaeeGenderFilter('all')} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition ${daeeGenderFilter === 'all' ? 'bg-white text-gray-800 shadow-sm' : 'text-gray-500'}`}>
                 সবাই ({daeeList.length})
               </button>
-              <button 
-                onClick={() => setDaeeGenderFilter('পুরুষ')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition ${daeeGenderFilter === 'পুরুষ' ? 'bg-indigo-600 text-white shadow-sm' : 'text-gray-500 hover:text-indigo-600'}`}
-              >
+              <button onClick={() => setDaeeGenderFilter('পুরুষ')} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition ${daeeGenderFilter === 'পুরুষ' ? 'bg-indigo-600 text-white shadow-sm' : 'text-gray-500'}`}>
                 👨 পুরুষ ({daeeList.filter(d => (d.gender || 'পুরুষ') === 'পুরুষ').length})
               </button>
-              <button 
-                onClick={() => setDaeeGenderFilter('মহিলা')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition ${daeeGenderFilter === 'মহিলা' ? 'bg-pink-600 text-white shadow-sm' : 'text-gray-500 hover:text-pink-600'}`}
-              >
+              <button onClick={() => setDaeeGenderFilter('মহিলা')} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition ${daeeGenderFilter === 'মহিলা' ? 'bg-pink-600 text-white shadow-sm' : 'text-gray-500'}`}>
                 🧕 মহিলা ({daeeList.filter(d => d.gender === 'মহিলা').length})
               </button>
             </div>
@@ -189,7 +201,7 @@ export default function AdminDashboard() {
           {loading ? (
             <div className="text-center py-10 text-gray-500">তথ্য লোড হচ্ছে...</div>
           ) : filteredDaees.length === 0 ? (
-            <div className="text-center py-10 text-gray-400">এই ফিল্টারে কোনো দাঈ পাওয়া যায়নি।</div>
+            <div className="text-center py-10 text-gray-400">কোনো দাঈ পাওয়া যায়নি।</div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
@@ -201,7 +213,7 @@ export default function AdminDashboard() {
                     <th className="p-3">ঠিকানা ও শিক্ষা</th>
                     <th className="p-3">তারিখ ও সময়</th>
                     <th className="p-3 text-center">মাদউ</th>
-                    <th className="p-3 text-center">কোড একশন</th>
+                    <th className="p-3 text-center">অ্যাকশন</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -209,7 +221,7 @@ export default function AdminDashboard() {
                     <tr key={daee.id} className="border-b hover:bg-gray-50">
                       <td className="p-3">
                         {daee.user_id === 'Pending' ? (
-                          <span className="bg-amber-100 text-amber-800 text-xs px-2.5 py-1 rounded-full font-bold animate-pulse">
+                          <span className="bg-amber-100 text-amber-800 text-xs px-2 py-0.5 rounded-full font-bold animate-pulse">
                             Pending
                           </span>
                         ) : (
@@ -239,15 +251,27 @@ export default function AdminDashboard() {
                         </button>
                       </td>
                       <td className="p-3 text-center">
-                        <button 
-                          onClick={() => {
-                            setEditingDaee(daee);
-                            setNewCodeInput(daee.user_id === 'Pending' ? '' : daee.user_id);
-                          }}
-                          className="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1.5 rounded-md font-medium transition shadow-sm"
-                        >
-                          {daee.user_id === 'Pending' ? 'কোড বসান' : 'কোড পরিবর্তন'}
-                        </button>
+                        <div className="flex items-center justify-center gap-1.5">
+                          {/* কোড বসানো বাটন */}
+                          <button 
+                            onClick={() => {
+                              setEditingDaee(daee);
+                              setNewCodeInput(daee.user_id === 'Pending' ? '' : daee.user_id);
+                            }}
+                            className="bg-blue-600 hover:bg-blue-700 text-white text-xs px-2.5 py-1.5 rounded-md font-medium transition shadow-sm"
+                          >
+                            {daee.user_id === 'Pending' ? 'কোড বসান' : 'এডিট'}
+                          </button>
+
+                          {/* ডিলিট বাটন */}
+                          <button 
+                            onClick={() => handleDeleteDaee(daee.id, daee.name, daee.user_id)}
+                            className="bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 text-xs px-2.5 py-1.5 rounded-md font-medium transition"
+                            title="মুছে ফেলুন"
+                          >
+                            মুছুন
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -265,7 +289,7 @@ export default function AdminDashboard() {
               <p className="text-sm text-gray-500 mb-4">দাঈ: <span className="font-semibold text-gray-800">{editingDaee.name}</span></p>
 
               <div className="mb-4">
-                <label className="block text-xs font-medium text-gray-700 mb-1">নতুন দাঈ কোড (যেমন: 0001)</label>
+                <label className="block text-xs font-medium text-gray-700 mb-1">দাঈ কোড (যেমন: 0001)</label>
                 <input 
                   type="text" 
                   value={newCodeInput} 
@@ -288,7 +312,7 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {/* মাদউদের বিস্তারিত পপআপ + মাদউ জেন্ডার ফিল্টার */}
+        {/* মাদউদের বিস্তারিত পপআপ */}
         {selectedDaeeMadus && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
             <div className="bg-white p-6 rounded-2xl max-w-3xl w-full max-h-[85vh] overflow-y-auto shadow-2xl">
@@ -305,24 +329,14 @@ export default function AdminDashboard() {
                 </button>
               </div>
 
-              {/* মাদউদের জেন্ডার ফিল্টার বার */}
               <div className="flex items-center gap-2 mb-4 bg-gray-100 p-1 rounded-lg w-fit">
-                <button 
-                  onClick={() => setMaduGenderFilter('all')}
-                  className={`px-3 py-1 rounded-md text-xs font-bold ${maduGenderFilter === 'all' ? 'bg-white text-gray-800 shadow-xs' : 'text-gray-500'}`}
-                >
+                <button onClick={() => setMaduGenderFilter('all')} className={`px-3 py-1 rounded-md text-xs font-bold ${maduGenderFilter === 'all' ? 'bg-white text-gray-800 shadow-xs' : 'text-gray-500'}`}>
                   সবাই
                 </button>
-                <button 
-                  onClick={() => setMaduGenderFilter('পুরুষ')}
-                  className={`px-3 py-1 rounded-md text-xs font-bold ${maduGenderFilter === 'পুরুষ' ? 'bg-indigo-600 text-white' : 'text-gray-500'}`}
-                >
+                <button onClick={() => setMaduGenderFilter('পুরুষ')} className={`px-3 py-1 rounded-md text-xs font-bold ${maduGenderFilter === 'পুরুষ' ? 'bg-indigo-600 text-white' : 'text-gray-500'}`}>
                   👨 পুরুষ
                 </button>
-                <button 
-                  onClick={() => setMaduGenderFilter('মহিলা')}
-                  className={`px-3 py-1 rounded-md text-xs font-bold ${maduGenderFilter === 'মহিলা' ? 'bg-pink-600 text-white' : 'text-gray-500'}`}
-                >
+                <button onClick={() => setMaduGenderFilter('মহিলা')} className={`px-3 py-1 rounded-md text-xs font-bold ${maduGenderFilter === 'মহিলা' ? 'bg-pink-600 text-white' : 'text-gray-500'}`}>
                   🧕 মহিলা
                 </button>
               </div>
@@ -336,6 +350,7 @@ export default function AdminDashboard() {
                       <th className="p-2">মাদউ আইডি</th>
                       <th className="p-2">নাম ও লিঙ্গ</th>
                       <th className="p-2">মোবাইল</th>
+                      <th className="p-2">পেশা ও শিক্ষা</th>
                       <th className="p-2">তারিখ ও সময়</th>
                     </tr>
                   </thead>
@@ -350,6 +365,10 @@ export default function AdminDashboard() {
                           </span>
                         </td>
                         <td className="p-2 text-gray-600">{m.mobile}</td>
+                        <td className="p-2 text-xs text-gray-500">
+                          <div>{m.profession || '—'}</div>
+                          <div className="text-green-700">{m.education || '—'}</div>
+                        </td>
                         <td className="p-2 text-xs text-gray-500 font-medium">
                           {formatDateTime(m.created_at)}
                         </td>

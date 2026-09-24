@@ -9,7 +9,7 @@ export default function RegisterDaee() {
     name: '',
     gender: 'পুরুষ',
     mobile: '',
-    pin: '',
+    pin: '', // পাসওয়ার্ড
     email: '',
     presentAddress: '',
     permanentAddress: '',
@@ -27,13 +27,27 @@ export default function RegisterDaee() {
     e.preventDefault();
 
     if (formData.pin.length < 4) {
-      alert('পিন কোড কমপক্ষে ৪ ডিজিটের হতে হবে!');
+      alert('পাসওয়ার্ড কমপক্ষে ৪ ডিজিটের হতে হবে!');
       return;
     }
 
     setLoading(true);
 
     try {
+      // ১. মোবাইল নাম্বার ডুপ্লিকেট কিনা যাচাই
+      const { data: existingUser } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('mobile', formData.mobile.trim())
+        .maybeSingle();
+
+      if (existingUser) {
+        alert('এই মোবাইল নাম্বারে ইতিমধ্যে একটি একাউন্ট রয়েছে! দয়া করে লগইন করুন।');
+        setLoading(false);
+        return;
+      }
+
+      // ২. নতুন দাঈর আবেদন জমা
       const { error: insertError } = await supabase
         .from('profiles')
         .insert([
@@ -69,7 +83,7 @@ export default function RegisterDaee() {
           <div className="text-3xl mb-2">⏳</div>
           <h2 className="text-xl font-bold text-gray-800 mb-1">আবেদন জমা হয়েছে!</h2>
           <p className="text-gray-600 text-xs mb-4">
-            আপনার দাঈ কোড বর্তমানে <span className="font-bold text-amber-600">Pending</span> রয়েছে। সুপার এডমিন যাচাই করে কোড অনুমোদন করবেন।
+            আপনার দাঈ কোড বর্তমানে <span className="font-bold text-amber-600">Pending</span> রয়েছে। সুপার এডমিন যাচাই করে অনুমোদন করবেন।
           </p>
           <Link href="/login">
             <button className="w-full bg-[#00a651] text-white py-2.5 rounded-lg text-sm font-semibold hover:bg-green-700 transition">
@@ -85,17 +99,14 @@ export default function RegisterDaee() {
     <div className="min-h-screen bg-gray-100 py-6 px-3 flex justify-center items-center">
       <div className="bg-white rounded-2xl shadow-md border border-gray-200 w-full max-w-lg overflow-hidden">
         
-        {/* কমপ্যাক্ট হেডার: দাওয়াতুস সুন্নাহ -> দাঈ রেজিস্ট্রেশন -> আসসুন্নাহ ফাউন্ডেশন */}
         <div className="bg-[#008f45] text-white py-4 px-5 text-center">
           <h1 className="text-xl font-bold tracking-wide">দাওয়াতুস সুন্নাহ</h1>
           <p className="text-sm font-semibold text-green-100 mt-0.5">দাঈ রেজিস্ট্রেশন</p>
           <p className="text-[11px] text-green-200 mt-0.5">আসসুন্নাহ ফাউন্ডেশনের একটি দাওয়াতি উদ্যোগ</p>
         </div>
 
-        {/* কমপ্যাক্ট ও সংক্ষেপ ফর্ম */}
         <form onSubmit={handleSubmit} className="p-5 space-y-3.5">
           
-          {/* নাম */}
           <div>
             <label className="block text-gray-700 text-xs font-bold mb-1">পুরো নাম *</label>
             <input 
@@ -109,36 +120,20 @@ export default function RegisterDaee() {
             />
           </div>
 
-          {/* জেন্ডার নির্বাচন */}
           <div>
             <label className="block text-gray-700 text-xs font-bold mb-1">লিঙ্গ (Gender) *</label>
             <div className="grid grid-cols-2 gap-2">
               <label className={`flex items-center justify-center py-2 px-3 rounded-lg border cursor-pointer text-xs font-medium transition ${formData.gender === 'পুরুষ' ? 'border-[#00a651] bg-green-50 text-[#00a651] font-bold' : 'border-gray-200 text-gray-600'}`}>
-                <input 
-                  type="radio" 
-                  name="gender" 
-                  value="পুরুষ" 
-                  checked={formData.gender === 'পুরুষ'} 
-                  onChange={handleChange} 
-                  className="mr-1.5 accent-[#00a651]" 
-                />
+                <input type="radio" name="gender" value="পুরুষ" checked={formData.gender === 'পুরুষ'} onChange={handleChange} className="mr-1.5 accent-[#00a651]" />
                 👨 পুরুষ
               </label>
               <label className={`flex items-center justify-center py-2 px-3 rounded-lg border cursor-pointer text-xs font-medium transition ${formData.gender === 'মহিলা' ? 'border-pink-500 bg-pink-50 text-pink-700 font-bold' : 'border-gray-200 text-gray-600'}`}>
-                <input 
-                  type="radio" 
-                  name="gender" 
-                  value="মহিলা" 
-                  checked={formData.gender === 'মহিলা'} 
-                  onChange={handleChange} 
-                  className="mr-1.5 accent-pink-600" 
-                />
+                <input type="radio" name="gender" value="মহিলা" checked={formData.gender === 'মহিলা'} onChange={handleChange} className="mr-1.5 accent-pink-600" />
                 🧕 মহিলা
               </label>
             </div>
           </div>
           
-          {/* মোবাইল */}
           <div>
             <label className="block text-gray-700 text-xs font-bold mb-1">মোবাইল নাম্বার (WhatsApp) *</label>
             <input 
@@ -152,10 +147,10 @@ export default function RegisterDaee() {
             />
           </div>
 
-          {/* পিন কোড (কমপ্যাক্ট ডিজাইন) */}
+          {/* পাসওয়ার্ড ফিল্ড */}
           <div className="bg-green-50/70 p-3 rounded-xl border border-green-200">
             <div className="flex justify-between items-center mb-1">
-              <label className="text-green-950 text-xs font-bold">লগইন পিন কোড (৪-৬ ডিজিট) *</label>
+              <label className="text-green-950 text-xs font-bold">লগইন পাসওয়ার্ড (কমপক্ষে ৪ সংখ্যা) *</label>
               <span className="text-[10px] text-green-700 font-medium">(লগইনে লাগবে)</span>
             </div>
             <input 
@@ -163,77 +158,35 @@ export default function RegisterDaee() {
               value={formData.pin} 
               onChange={handleChange} 
               type="password" 
-              maxLength={6} 
+              maxLength={10} 
               className="w-full border border-green-300 bg-white p-2 rounded-lg text-center font-bold tracking-widest text-base focus:outline-none focus:ring-1 focus:ring-[#00a651]" 
               placeholder="••••" 
               required 
             />
           </div>
 
-          {/* বর্তমান ঠিকানা */}
           <div>
             <label className="block text-gray-700 text-xs font-bold mb-1">বর্তমান ঠিকানা *</label>
-            <textarea 
-              name="presentAddress" 
-              value={formData.presentAddress} 
-              onChange={handleChange} 
-              className="w-full border border-gray-300 p-2 rounded-lg text-sm focus:outline-none focus:border-[#00a651]" 
-              placeholder="বর্তমান ঠিকানা" 
-              rows={1} 
-              required
-            ></textarea>
+            <textarea name="presentAddress" value={formData.presentAddress} onChange={handleChange} className="w-full border border-gray-300 p-2 rounded-lg text-sm focus:outline-none focus:border-[#00a651]" placeholder="বর্তমান ঠিকানা" rows={1} required></textarea>
           </div>
 
-          {/* স্থায়ী ঠিকানা */}
           <div>
             <label className="block text-gray-700 text-xs font-bold mb-1">স্থায়ী ঠিকানা *</label>
-            <textarea 
-              name="permanentAddress" 
-              value={formData.permanentAddress} 
-              onChange={handleChange} 
-              className="w-full border border-gray-300 p-2 rounded-lg text-sm focus:outline-none focus:border-[#00a651]" 
-              placeholder="স্থায়ী ঠিকানা" 
-              rows={1} 
-              required
-            ></textarea>
+            <textarea name="permanentAddress" value={formData.permanentAddress} onChange={handleChange} className="w-full border border-gray-300 p-2 rounded-lg text-sm focus:outline-none focus:border-[#00a651]" placeholder="স্থায়ী ঠিকানা" rows={1} required></textarea>
           </div>
 
-          {/* শিক্ষাগত যোগ্যতা */}
           <div>
             <label className="block text-gray-700 text-xs font-bold mb-1">শিক্ষাগত যোগ্যতা *</label>
-            <input 
-              name="education" 
-              value={formData.education} 
-              onChange={handleChange} 
-              type="text" 
-              className="w-full border border-gray-300 p-2 rounded-lg text-sm focus:outline-none focus:border-[#00a651]" 
-              placeholder="যেমন: দাওরায়ে হাদিস / অনার্স" 
-              required 
-            />
+            <input name="education" value={formData.education} onChange={handleChange} type="text" className="w-full border border-gray-300 p-2 rounded-lg text-sm focus:outline-none focus:border-[#00a651]" placeholder="যেমন: দাওরায়ে হাদিস / অনার্স" required />
           </div>
 
-          {/* ইমেইল (ঐচ্ছিক) */}
           <div>
             <label className="block text-gray-500 text-xs font-medium mb-1">ইমেইল ঠিকানা (ঐচ্ছিক)</label>
-            <input 
-              name="email" 
-              value={formData.email} 
-              onChange={handleChange} 
-              type="email" 
-              className="w-full border border-gray-300 p-2 rounded-lg text-sm focus:outline-none focus:border-[#00a651]" 
-              placeholder="example@gmail.com" 
-            />
+            <input name="email" value={formData.email} onChange={handleChange} type="email" className="w-full border border-gray-300 p-2 rounded-lg text-sm focus:outline-none focus:border-[#00a651]" placeholder="example@gmail.com" />
           </div>
 
-          {/* সাবমিট বাটন */}
-          <button 
-            type="submit" 
-            disabled={loading} 
-            className={`w-full py-2.5 rounded-lg font-bold text-sm text-white transition ${
-              loading ? 'bg-gray-400' : 'bg-[#00a651] hover:bg-green-700 shadow'
-            }`}
-          >
-            {loading ? 'জমা হচ্ছে...' : 'নিবন্ধন সম্পন্ন করুন'}
+          <button type="submit" disabled={loading} className={`w-full py-2.5 rounded-lg font-bold text-sm text-white transition ${loading ? 'bg-gray-400' : 'bg-[#00a651] hover:bg-green-700 shadow'}`}>
+            {loading ? 'যাচাই করা হচ্ছে...' : 'নিবন্ধন সম্পন্ন করুন'}
           </button>
 
           <div className="text-center pt-1">

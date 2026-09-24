@@ -26,12 +26,11 @@ export default function LoginPage() {
         .maybeSingle();
 
       if (fetchError || !user) {
-        setError('ভুল মোবাইল নাম্বার অথবা পিন কোড! আবার চেষ্টা করুন।');
+        setError('ভুল মোবাইল নাম্বার অথবা পাসওয়ার্ড! আবার চেষ্টা করুন।');
         setLoading(false);
         return;
       }
 
-      // ব্রাউজারে সিকিউরিটি সেশন সেভ করা
       localStorage.setItem('user_session', JSON.stringify(user));
 
       if (user.role === 'superadmin') {
@@ -45,50 +44,49 @@ export default function LoginPage() {
 
     } catch (err: any) {
       console.error(err);
-      setError('লগইনে সমস্যা হয়েছে। আবার চেষ্টা করুন।');
+      setError('লগইনে সমস্যা হয়েছে। ইন্টারনেট কানেকশন চেক করুন।');
       setLoading(false);
     }
   };
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
-      <div className="bg-white p-8 rounded-2xl shadow-lg border-t-4 border-green-600 max-w-md w-full">
+      <div className="bg-white p-7 rounded-2xl shadow-lg border-t-4 border-[#00a651] max-w-sm w-full">
         
         <h2 className="text-2xl font-bold text-gray-800 text-center mb-1">লগইন করুন</h2>
-        <p className="text-gray-500 text-sm text-center mb-6">দাওয়াতুস সুন্নাহ সিস্টেমে স্বাগতম</p>
+        <p className="text-gray-500 text-xs text-center mb-6">দাওয়াতুস সুন্নাহ সিস্টেমে স্বাগতম</p>
 
         {error && (
-          <div className="p-3 mb-4 rounded-lg bg-red-100 text-red-700 text-sm text-center font-medium">
+          <div className="p-3 mb-4 rounded-lg bg-red-100 text-red-700 text-xs text-center font-medium">
             {error}
           </div>
         )}
 
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
-            <label className="block text-gray-700 text-sm font-medium mb-1">
+            <label className="block text-gray-700 text-xs font-bold mb-1">
               মোবাইল নাম্বার
             </label>
             <input 
               type="tel" 
               value={mobile} 
               onChange={(e) => setMobile(e.target.value)} 
-              className="w-full border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600" 
+              className="w-full border border-gray-300 p-2.5 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#00a651]" 
               placeholder="01XXXXXXXXX" 
               required 
             />
           </div>
 
           <div>
-            <label className="block text-gray-700 text-sm font-medium mb-1">
-              গোপন পিন কোড
+            <label className="block text-gray-700 text-xs font-bold mb-1">
+              পাসওয়ার্ড
             </label>
             <input 
               type="password" 
-              maxLength={6}
               value={pin} 
               onChange={(e) => setPin(e.target.value)} 
-              className="w-full border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600 tracking-widest text-lg font-bold" 
-              placeholder="****" 
+              className="w-full border border-gray-300 p-2.5 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#00a651] tracking-widest text-base" 
+              placeholder="আপনার পাসওয়ার্ড দিন" 
               required 
             />
           </div>
@@ -96,14 +94,14 @@ export default function LoginPage() {
           <button 
             type="submit" 
             disabled={loading} 
-            className={`w-full text-white py-3 px-4 rounded-lg font-bold transition ${loading ? 'bg-gray-400' : 'bg-[#00a651] hover:bg-green-700'}`}>
+            className={`w-full text-white py-2.5 rounded-lg font-bold text-sm transition ${loading ? 'bg-gray-400' : 'bg-[#00a651] hover:bg-green-700'}`}>
             {loading ? 'যাচাই করা হচ্ছে...' : 'প্রবেশ করুন'}
           </button>
         </form>
 
-        <div className="mt-6 text-center text-sm text-gray-600">
+        <div className="mt-5 text-center text-xs text-gray-600">
           নতুন দাঈ হতে চান?{' '}
-          <Link href="/register" className="text-green-600 font-bold hover:underline">
+          <Link href="/register" className="text-[#00a651] font-bold hover:underline">
             নিবন্ধন করুন
           </Link>
         </div>
