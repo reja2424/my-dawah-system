@@ -11,6 +11,10 @@ export default function AdminDashboard() {
   const [selectedDaeeName, setSelectedDaeeName] = useState('');
   const [loading, setLoading] = useState(true);
 
+  // ফিল্টার স্টেট
+  const [daeeGenderFilter, setDaeeGenderFilter] = useState('all'); // all | পুরুষ | মহিলা
+  const [maduGenderFilter, setMaduGenderFilter] = useState('all');
+
   // কোড এডিট করার স্টেট
   const [editingDaee, setEditingDaee] = useState<any | null>(null);
   const [newCodeInput, setNewCodeInput] = useState('');
@@ -61,7 +65,6 @@ export default function AdminDashboard() {
     fetchAdminData();
   }, []);
 
-  // দাঈ কোড সেভ করার ফাংশন
   const handleSaveDaeeCode = async () => {
     if (!newCodeInput.trim()) {
       alert('সঠিক কোড নম্বর দিন!');
@@ -77,10 +80,10 @@ export default function AdminDashboard() {
 
       if (error) throw error;
 
-      alert(`সফলভাবে দাঈ কোড "${newCodeInput.trim()}" নির্ধারিত হয়েছে!`);
+      alert(`দাঈ কোড "${newCodeInput.trim()}" নির্ধারিত হয়েছে!`);
       setEditingDaee(null);
       setNewCodeInput('');
-      fetchAdminData(); // রিফ্রেশ ডাটা
+      fetchAdminData();
     } catch (err: any) {
       alert('কোড আপডেটে সমস্যা: ' + err.message);
     } finally {
@@ -92,11 +95,24 @@ export default function AdminDashboard() {
     const filtered = allMadus.filter(m => m.parent_daee_id === daeeId);
     setSelectedDaeeMadus(filtered);
     setSelectedDaeeName(daeeName);
+    setMaduGenderFilter('all'); // রিসেট ফিল্টার
   };
 
   const handleLogout = () => {
     localStorage.removeItem('user_session');
   };
+
+  // ফিল্টার অনুযায়ী দাঈ তালিকা
+  const filteredDaees = daeeList.filter((daee) => {
+    if (daeeGenderFilter === 'all') return true;
+    return (daee.gender || 'পুরুষ') === daeeGenderFilter;
+  });
+
+  // ফিল্টার অনুযায়ী মাদউ তালিকা (পপআপের জন্য)
+  const filteredMadusInModal = selectedDaeeMadus?.filter((madu) => {
+    if (maduGenderFilter === 'all') return true;
+    return (madu.gender || 'পুরুষ') === maduGenderFilter;
+  });
 
   return (
     <div className="min-h-screen bg-gray-100 p-6">
@@ -107,7 +123,7 @@ export default function AdminDashboard() {
           <div>
             <span className="bg-red-600 text-xs px-2.5 py-1 rounded font-bold uppercase tracking-wider">Super Admin Panel</span>
             <h1 className="text-2xl font-bold mt-2">দাওয়াতুস সুন্নাহ - কেন্দ্রীয় মনিটরিং</h1>
-            <p className="text-gray-400 text-sm mt-1">দাঈ কোড অনুমোদন ও পরিসংখ্যান পর্যবেক্ষণ</p>
+            <p className="text-gray-400 text-sm mt-1">দাঈ ও মাদউদের পরিসংখ্যান ও জেন্ডার ফিল্টারিং</p>
           </div>
           <Link href="/">
             <button onClick={handleLogout} className="bg-gray-800 hover:bg-gray-700 text-sm border border-gray-700 px-4 py-2.5 rounded-lg transition font-medium">
@@ -117,32 +133,70 @@ export default function AdminDashboard() {
         </div>
 
         {/* সামারি কার্ড */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-l-4 border-l-blue-600">
-            <span className="text-sm font-medium text-gray-500">মোট নিবন্ধিত দাঈ</span>
-            <div className="text-3xl font-extrabold text-blue-700 mt-2">{daeeList.length} জন</div>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="bg-white p-5 rounded-xl shadow-sm border border-l-4 border-l-blue-600">
+            <span className="text-xs font-semibold text-gray-500 uppercase">মোট দাঈ</span>
+            <div className="text-2xl font-extrabold text-blue-700 mt-1">{daeeList.length} জন</div>
           </div>
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-l-4 border-l-green-600">
-            <span className="text-sm font-medium text-gray-500">মোট মাদউ সংখ্যা</span>
-            <div className="text-3xl font-extrabold text-green-700 mt-2">{allMadus.length} জন</div>
+          <div className="bg-white p-5 rounded-xl shadow-sm border border-l-4 border-l-green-600">
+            <span className="text-xs font-semibold text-gray-500 uppercase">মোট মাদউ</span>
+            <div className="text-2xl font-extrabold text-green-700 mt-1">{allMadus.length} জন</div>
+          </div>
+          <div className="bg-white p-5 rounded-xl shadow-sm border border-l-4 border-l-indigo-600">
+            <span className="text-xs font-semibold text-gray-500 uppercase">👨 পুরুষ দাঈ</span>
+            <div className="text-2xl font-extrabold text-indigo-700 mt-1">
+              {daeeList.filter(d => (d.gender || 'পুরুষ') === 'পুরুষ').length} জন
+            </div>
+          </div>
+          <div className="bg-white p-5 rounded-xl shadow-sm border border-l-4 border-l-pink-600">
+            <span className="text-xs font-semibold text-gray-500 uppercase">🧕 মহিলা দাঈ</span>
+            <div className="text-2xl font-extrabold text-pink-700 mt-1">
+              {daeeList.filter(d => d.gender === 'মহিলা').length} জন
+            </div>
           </div>
         </div>
 
-        {/* দাঈদের মনিটরিং টেবিল */}
+        {/* দাঈদের মনিটরিং টেবিল + জেন্ডার ফিল্টার বার */}
         <div className="bg-white p-6 rounded-xl shadow-sm border">
-          <h2 className="text-lg font-bold text-gray-800 mb-4">সকল দাঈ ও কোড অনুমোদন তালিকা</h2>
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-5 border-b pb-4">
+            <h2 className="text-lg font-bold text-gray-800">
+              দাঈদের তালিকা ({filteredDaees.length} জন প্রদর্শিত)
+            </h2>
+
+            {/* ফিল্টার বাটনসমূহ */}
+            <div className="flex items-center gap-2 bg-gray-100 p-1 rounded-xl">
+              <button 
+                onClick={() => setDaeeGenderFilter('all')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition ${daeeGenderFilter === 'all' ? 'bg-white text-gray-800 shadow-sm' : 'text-gray-500 hover:text-gray-800'}`}
+              >
+                সবাই ({daeeList.length})
+              </button>
+              <button 
+                onClick={() => setDaeeGenderFilter('পুরুষ')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition ${daeeGenderFilter === 'পুরুষ' ? 'bg-indigo-600 text-white shadow-sm' : 'text-gray-500 hover:text-indigo-600'}`}
+              >
+                👨 পুরুষ ({daeeList.filter(d => (d.gender || 'পুরুষ') === 'পুরুষ').length})
+              </button>
+              <button 
+                onClick={() => setDaeeGenderFilter('মহিলা')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition ${daeeGenderFilter === 'মহিলা' ? 'bg-pink-600 text-white shadow-sm' : 'text-gray-500 hover:text-pink-600'}`}
+              >
+                🧕 মহিলা ({daeeList.filter(d => d.gender === 'মহিলা').length})
+              </button>
+            </div>
+          </div>
 
           {loading ? (
             <div className="text-center py-10 text-gray-500">তথ্য লোড হচ্ছে...</div>
-          ) : daeeList.length === 0 ? (
-            <div className="text-center py-10 text-gray-400">কোনো দাঈ পাওয়া যায়নি।</div>
+          ) : filteredDaees.length === 0 ? (
+            <div className="text-center py-10 text-gray-400">এই ফিল্টারে কোনো দাঈ পাওয়া যায়নি।</div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="border-b bg-gray-50 text-gray-600 text-sm">
+                  <tr className="border-b bg-gray-50 text-gray-600 text-xs uppercase">
                     <th className="p-3">দাঈ কোড</th>
-                    <th className="p-3">নাম</th>
+                    <th className="p-3">নাম ও লিঙ্গ</th>
                     <th className="p-3">মোবাইল</th>
                     <th className="p-3">ঠিকানা ও শিক্ষা</th>
                     <th className="p-3">তারিখ ও সময়</th>
@@ -151,7 +205,7 @@ export default function AdminDashboard() {
                   </tr>
                 </thead>
                 <tbody>
-                  {daeeList.map((daee) => (
+                  {filteredDaees.map((daee) => (
                     <tr key={daee.id} className="border-b hover:bg-gray-50">
                       <td className="p-3">
                         {daee.user_id === 'Pending' ? (
@@ -162,7 +216,12 @@ export default function AdminDashboard() {
                           <span className="font-bold text-blue-700 text-base">{daee.user_id}</span>
                         )}
                       </td>
-                      <td className="p-3 font-semibold text-gray-800">{daee.name}</td>
+                      <td className="p-3">
+                        <div className="font-semibold text-gray-800">{daee.name}</div>
+                        <span className={`inline-block text-[10px] font-bold px-2 py-0.5 rounded-full mt-0.5 ${daee.gender === 'মহিলা' ? 'bg-pink-100 text-pink-700' : 'bg-blue-100 text-blue-700'}`}>
+                          {daee.gender === 'মহিলা' ? '🧕 মহিলা' : '👨 পুরুষ'}
+                        </span>
+                      </td>
                       <td className="p-3 text-gray-600 font-mono text-sm">{daee.mobile}</td>
                       <td className="p-3 text-xs text-gray-500">
                         <div>{daee.present_address}</div>
@@ -198,7 +257,7 @@ export default function AdminDashboard() {
           )}
         </div>
 
-        {/* কোড নির্ধারণ পপআপ মোডাল (Modal) */}
+        {/* কোড নির্ধারণ পপআপ */}
         {editingDaee && (
           <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50">
             <div className="bg-white p-6 rounded-2xl max-w-sm w-full shadow-2xl">
@@ -218,17 +277,10 @@ export default function AdminDashboard() {
               </div>
 
               <div className="flex gap-2 justify-end">
-                <button 
-                  onClick={() => setEditingDaee(null)} 
-                  className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg"
-                >
+                <button onClick={() => setEditingDaee(null)} className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg">
                   বাতিল
                 </button>
-                <button 
-                  onClick={handleSaveDaeeCode}
-                  disabled={updating}
-                  className="px-5 py-2 text-sm bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition"
-                >
+                <button onClick={handleSaveDaeeCode} disabled={updating} className="px-5 py-2 text-sm bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition">
                   {updating ? 'সংরক্ষণ হচ্ছে...' : 'সংরক্ষণ করুন'}
                 </button>
               </div>
@@ -236,36 +288,67 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {/* মাদউদের বিস্তারিত পপআপ */}
+        {/* মাদউদের বিস্তারিত পপআপ + মাদউ জেন্ডার ফিল্টার */}
         {selectedDaeeMadus && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white p-6 rounded-2xl max-w-3xl w-full max-h-[80vh] overflow-y-auto shadow-2xl">
+            <div className="bg-white p-6 rounded-2xl max-w-3xl w-full max-h-[85vh] overflow-y-auto shadow-2xl">
+              
               <div className="flex justify-between items-center mb-4 border-b pb-3">
-                <h3 className="text-lg font-bold text-gray-800">
-                  {selectedDaeeName}-এর অধীনস্থ মাদউগণ ({selectedDaeeMadus.length} জন)
-                </h3>
+                <div>
+                  <h3 className="text-lg font-bold text-gray-800">
+                    {selectedDaeeName}-এর অধীনস্থ মাদউগণ
+                  </h3>
+                  <p className="text-xs text-gray-500">মোট মাদউ: {selectedDaeeMadus.length} জন</p>
+                </div>
                 <button onClick={() => setSelectedDaeeMadus(null)} className="text-gray-400 hover:text-gray-600 font-bold text-lg">
                   ✕
                 </button>
               </div>
 
-              {selectedDaeeMadus.length === 0 ? (
-                <p className="text-gray-500 text-center py-6">এই দাঈর অধীনে এখনো কোনো মাদউ নেই।</p>
+              {/* মাদউদের জেন্ডার ফিল্টার বার */}
+              <div className="flex items-center gap-2 mb-4 bg-gray-100 p-1 rounded-lg w-fit">
+                <button 
+                  onClick={() => setMaduGenderFilter('all')}
+                  className={`px-3 py-1 rounded-md text-xs font-bold ${maduGenderFilter === 'all' ? 'bg-white text-gray-800 shadow-xs' : 'text-gray-500'}`}
+                >
+                  সবাই
+                </button>
+                <button 
+                  onClick={() => setMaduGenderFilter('পুরুষ')}
+                  className={`px-3 py-1 rounded-md text-xs font-bold ${maduGenderFilter === 'পুরুষ' ? 'bg-indigo-600 text-white' : 'text-gray-500'}`}
+                >
+                  👨 পুরুষ
+                </button>
+                <button 
+                  onClick={() => setMaduGenderFilter('মহিলা')}
+                  className={`px-3 py-1 rounded-md text-xs font-bold ${maduGenderFilter === 'মহিলা' ? 'bg-pink-600 text-white' : 'text-gray-500'}`}
+                >
+                  🧕 মহিলা
+                </button>
+              </div>
+
+              {(!filteredMadusInModal || filteredMadusInModal.length === 0) ? (
+                <p className="text-gray-500 text-center py-6">এই ফিল্টারে কোনো মাদউ নেই।</p>
               ) : (
                 <table className="w-full text-left text-sm">
                   <thead>
-                    <tr className="border-b bg-gray-50 text-gray-600">
+                    <tr className="border-b bg-gray-50 text-gray-600 text-xs uppercase">
                       <th className="p-2">মাদউ আইডি</th>
-                      <th className="p-2">নাম</th>
+                      <th className="p-2">নাম ও লিঙ্গ</th>
                       <th className="p-2">মোবাইল</th>
                       <th className="p-2">তারিখ ও সময়</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {selectedDaeeMadus.map((m) => (
-                      <tr key={m.id} className="border-b">
+                    {filteredMadusInModal.map((m) => (
+                      <tr key={m.id} className="border-b hover:bg-gray-50">
                         <td className="p-2 font-bold text-green-700">{m.user_id}</td>
-                        <td className="p-2 font-medium">{m.name}</td>
+                        <td className="p-2">
+                          <span className="font-medium">{m.name}</span>
+                          <span className={`ml-2 text-[10px] font-bold px-1.5 py-0.5 rounded ${m.gender === 'মহিলা' ? 'bg-pink-100 text-pink-700' : 'bg-blue-100 text-blue-700'}`}>
+                            {m.gender === 'মহিলা' ? 'মহিলা' : 'পুরুষ'}
+                          </span>
+                        </td>
                         <td className="p-2 text-gray-600">{m.mobile}</td>
                         <td className="p-2 text-xs text-gray-500 font-medium">
                           {formatDateTime(m.created_at)}

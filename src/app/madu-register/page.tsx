@@ -13,6 +13,7 @@ function MaduRegisterContent() {
 
   const [formData, setFormData] = useState({
     name: '',
+    gender: 'পুরুষ', // ডিফল্ট পুরুষ
     mobile: '',
     email: '',
     presentAddress: '',
@@ -25,7 +26,7 @@ function MaduRegisterContent() {
   const [assignedId, setAssignedId] = useState('');
   const [message, setMessage] = useState('');
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
@@ -51,14 +52,15 @@ function MaduRegisterContent() {
         .insert([
           {
             user_id: formattedMaduId,
-            name: formData.name,
+            name: formData.name.trim(),
+            gender: formData.gender, // মাদউয়ের জেন্ডার
             role: 'madu',
             parent_daee_id: daeeId,
-            mobile: formData.mobile,
-            email: formData.email,
-            present_address: formData.presentAddress,
-            permanent_address: formData.permanentAddress,
-            education: formData.education
+            mobile: formData.mobile.trim(),
+            email: formData.email ? formData.email.trim() : null,
+            present_address: formData.presentAddress.trim(),
+            permanent_address: formData.permanentAddress.trim(),
+            education: formData.education.trim()
           }
         ]);
 
@@ -131,12 +133,41 @@ function MaduRegisterContent() {
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label className="block text-gray-700 mb-1">পুরো নাম</label>
+            <label className="block text-gray-700 mb-1">পুরো নাম *</label>
             <input name="name" value={formData.name} onChange={handleChange} type="text" className="w-full border p-2.5 rounded focus:outline-none focus:border-gray-400" placeholder="মাদউয়ের নাম লিখুন" required />
+          </div>
+
+          {/* জেন্ডার নির্বাচন */}
+          <div>
+            <label className="block text-gray-700 text-xs font-bold uppercase mb-1">লিঙ্গ (Gender) *</label>
+            <div className="grid grid-cols-2 gap-3">
+              <label className={`flex items-center justify-center p-2.5 rounded-lg border cursor-pointer font-medium text-sm transition ${formData.gender === 'পুরুষ' ? 'border-[#00a651] bg-green-50 text-[#00a651] font-bold' : 'border-gray-200 bg-gray-50 text-gray-600'}`}>
+                <input 
+                  type="radio" 
+                  name="gender" 
+                  value="পুরুষ" 
+                  checked={formData.gender === 'পুরুষ'} 
+                  onChange={handleChange} 
+                  className="mr-2 accent-[#00a651]" 
+                />
+                👨 পুরুষ
+              </label>
+              <label className={`flex items-center justify-center p-2.5 rounded-lg border cursor-pointer font-medium text-sm transition ${formData.gender === 'মহিলা' ? 'border-pink-600 bg-pink-50 text-pink-700 font-bold' : 'border-gray-200 bg-gray-50 text-gray-600'}`}>
+                <input 
+                  type="radio" 
+                  name="gender" 
+                  value="মহিলা" 
+                  checked={formData.gender === 'মহিলা'} 
+                  onChange={handleChange} 
+                  className="mr-2 accent-pink-600" 
+                />
+                🧕 মহিলা
+              </label>
+            </div>
           </div>
           
           <div>
-            <label className="block text-gray-700 mb-1">মোবাইল নাম্বার (WhatsApp)</label>
+            <label className="block text-gray-700 mb-1">মোবাইল নাম্বার (WhatsApp) *</label>
             <input name="mobile" value={formData.mobile} onChange={handleChange} type="tel" className="w-full border p-2.5 rounded focus:outline-none focus:border-gray-400" placeholder="01XXXXXXXXX" required />
           </div>
 
@@ -146,18 +177,18 @@ function MaduRegisterContent() {
           </div>
 
           <div>
-            <label className="block text-gray-700 mb-1">বর্তমান ঠিকানা</label>
-            <textarea name="presentAddress" value={formData.presentAddress} onChange={handleChange} className="w-full border p-2.5 rounded focus:outline-none focus:border-gray-400" placeholder="ঠিকানা লিখুন" rows={2}></textarea>
+            <label className="block text-gray-700 mb-1">বর্তমান ঠিকানা *</label>
+            <textarea name="presentAddress" value={formData.presentAddress} onChange={handleChange} className="w-full border p-2.5 rounded focus:outline-none focus:border-gray-400" placeholder="ঠিকানা লিখুন" rows={2} required></textarea>
           </div>
 
           <div>
-            <label className="block text-gray-700 mb-1">স্থায়ী ঠিকানা</label>
-            <textarea name="permanentAddress" value={formData.permanentAddress} onChange={handleChange} className="w-full border p-2.5 rounded focus:outline-none focus:border-gray-400" placeholder="স্থায়ী ঠিকানা" rows={2}></textarea>
+            <label className="block text-gray-700 mb-1">স্থায়ী ঠিকানা *</label>
+            <textarea name="permanentAddress" value={formData.permanentAddress} onChange={handleChange} className="w-full border p-2.5 rounded focus:outline-none focus:border-gray-400" placeholder="স্থায়ী ঠিকানা" rows={2} required></textarea>
           </div>
 
           <div>
-            <label className="block text-gray-700 mb-1">পেশা / শিক্ষাগত যোগ্যতা</label>
-            <input name="education" value={formData.education} onChange={handleChange} type="text" className="w-full border p-2.5 rounded focus:outline-none focus:border-gray-400" placeholder="পেশা বা শিক্ষা" />
+            <label className="block text-gray-700 mb-1">পেশা / শিক্ষাগত যোগ্যতা *</label>
+            <input name="education" value={formData.education} onChange={handleChange} type="text" className="w-full border p-2.5 rounded focus:outline-none focus:border-gray-400" placeholder="পেশা বা শিক্ষা" required />
           </div>
 
           <button type="submit" disabled={loading} className={`w-full text-white py-3 px-4 rounded font-bold mt-2 transition ${loading ? 'bg-gray-400' : 'bg-[#00a651] hover:bg-green-700'}`}>
