@@ -1,0 +1,21 @@
+{
+  "name": "দাওয়াতুস সুন্নাহ",
+  "short_name": "দাওয়াতুস সুন্নাহ",
+  "description": "আসসুন্নাহ ফাউন্ডেশনের একটি দাওয়াতি উদ্যোগ",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#00a651",
+  "icons": [
+    {
+      "src": "/globe.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "/globe.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml"
+    }
+  ]
+}
